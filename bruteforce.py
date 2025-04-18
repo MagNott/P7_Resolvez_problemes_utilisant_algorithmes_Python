@@ -218,6 +218,59 @@ def calculate_profit_and_costs(p_combinaisons: list[list[list]]) -> list[dict]:
     return l_results_dictionary
 
 
+def filter_valid_combinations(p_combos_profit_cost_list: list[dict]) -> list[dict]:
+    """
+    Filtre les combinaisons valides dont le coût total est inférieur ou égal à 500 €.
+
+    Paramètres :
+    ------------
+    p_combos_profit_cost_list : list[dict]
+        Liste de dictionnaires représentant des combinaisons d'actions,
+        avec les clés : "combinaison", "cout" et "profit".
+
+    Retour :
+    --------
+    list[dict]
+        Liste filtrée contenant uniquement les combinaisons valides,
+        c’est-à-dire celles dont le coût total est ≤ 500 €.
+    """
+    # Initialisation de la liste des combinaisons valides
+    l_valid_combos = []
+
+    # Parcourt chaque combinaison pour vérifier le coût et ajoute la combinaison à la liste des combinaisons valides
+    for d_combo in p_combos_profit_cost_list:
+        if d_combo["cout"] <= 500:
+            l_valid_combos.append(d_combo)
+
+    # Retourne la liste filtrée
+    return l_valid_combos
+
+
+def sort_combos_by_profit(p_valid_combos: list[dict]) -> list[dict]:
+    """
+    Trie les combinaisons valides par ordre décroissant de profit.
+
+    Paramètres :
+    ------------
+    p_valid_combos : list[dict]
+        Liste de dictionnaires représentant des combinaisons valides d'actions.
+        Chaque dictionnaire contient au moins la clé "profit".
+
+    Retour :
+    --------
+    list[dict]
+        Nouvelle liste triée par profit décroissant (du plus rentable au moins rentable).
+    """
+
+    l_sorted_combos = sorted(p_valid_combos, key=lambda d_combo: d_combo["profit"], reverse=True)
+    # key=lambda d_combo: d_combo["profit"] utilise une fonction lambda
+    # pour extraire la valeur associée à la clé "profit" de chaque dictionnaire.
+    # Cette valeur est utilisée comme critère de tri.
+
+    # Retourne la liste triée
+    return l_sorted_combos
+
+
 # PROGRAMME PRINCOPAL
 s_actions_file = "Liste-actions.csv"
 
@@ -233,13 +286,30 @@ table_display(list_actions)
 # Création des combinaisons d'action possibles
 # Le [1:] créé un slice sans l'en-tête sinon l'entete serait considéré comme une ligne lambda*
 # Et cela disperserait des chaines de caractères dans pleins de combinaison comme s'il s'agissait d'actions
+print("[bold cyan] Génération des combinaisons...")
 l_combinaisons = generate_combinations(list_actions[1:])
 print("[bold green]✅ Les combinaisons sont créées")
 # print(l_combinaisons)
 
-print(l_combinaisons[15])
+# print(l_combinaisons[15])
 
 # Calcul du cout total et du profit total pour chaque combinaison d'action
+print("[bold cyan] Calcul du coût total et du profit total de chaque combinaison...")
 l_combos_profit_cost_list = calculate_profit_and_costs(l_combinaisons)
 print("[bold green]✅ Les calculs de couts et profits sont établis")
-print(l_combos_profit_cost_list[15])
+# print(l_combos_profit_cost_list[15])
+
+print("[bold cyan] Filtre des combinaisons coutant + de 500€...")
+l_valid_combinaison = filter_valid_combinations(l_combos_profit_cost_list)
+print("[bold green]✅ Les combinaisons coutant plus de 500€ sont exclues")
+
+print("[bold cyan] Trie des combinaisons en fonction du meilleur profit...")
+l_valid_combinaison_sorted = sort_combos_by_profit(l_valid_combinaison)
+print("[bold green]✅ Les combinaisons sont triés de celle qui rapporte le meilleur profit à celle qui rapporte le moins")
+
+print(f"La meilleure combinaison est {l_valid_combinaison_sorted[0]}")
+print(l_valid_combinaison_sorted[1])
+print(l_valid_combinaison_sorted[2])
+print(l_valid_combinaison_sorted[3])
+print(l_valid_combinaison_sorted[4])
+print(l_valid_combinaison_sorted[5])
