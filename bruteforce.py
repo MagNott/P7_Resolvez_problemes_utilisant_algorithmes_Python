@@ -2,6 +2,7 @@ import csv
 import os
 from rich.table import Table
 from rich.console import Console
+from rich import print
 
 
 # FONCTIONS
@@ -169,11 +170,76 @@ def generate_combinations(p_actions_list: list[list[str]]) -> list[list]:
     return l_all_combos_list
 
 
+def calculate_profit_and_costs(p_combinaisons: list[list[list]]) -> list[dict]:
+    """
+    Calcule le coût total et le bénéfice total pour chaque combinaison d’actions.
+
+    Chaque combinaison est une liste d’actions, où chaque action est une liste contenant :
+    - le nom de l'action (str)
+    - le coût par action (str convertible en float)
+    - le pourcentage de profit (str, déjà transformé en float ailleurs)
+    - le profit en euros (float)
+
+    Paramètres
+    ----------
+    p_combinaisons : list[list[list]]
+        Liste contenant toutes les combinaisons possibles d’actions.
+
+    Retour
+    ------
+    list[dict]
+        Une liste de dictionnaires. Chaque dictionnaire contient :
+        - "combinaison" : la liste des actions de la combinaison
+        - "cout" : le coût total de cette combinaison (float, arrondi à 2 décimales)
+        - "profit" : le bénéfice total de cette combinaison (float, arrondi à 2 décimales)
+    """
+    # Initialisation de la liste a construire
+    l_results_dictionary = []
+
+    # 1er niveau de boucle pour initailiser les variables permettant de faire les calculs
+    for l_combo in p_combinaisons:
+        f_total_cost = 0.0
+        f_total_profit = 0.0
+
+        # 2eme niveau de boucle pour faire les calculs
+        for l_action in l_combo:
+            f_cost = float(l_action[1])
+            f_profit = float(l_action[3])
+            f_total_cost += f_cost
+            f_total_profit += f_profit
+
+        # Construction de la structure de sortie
+        l_results_dictionary.append({
+            "combinaison": l_combo,
+            "cout": round(f_total_cost, 2),
+            "profit": round(f_total_profit, 2)
+        })
+
+    return l_results_dictionary
+
+
 # PROGRAMME PRINCOPAL
 s_actions_file = "Liste-actions.csv"
 
+# Chargement des données CSv dans le programme
 list_actions = read_csv(s_actions_file)
+
+# Calcule des profits pour chaque action
 calculate_profits(list_actions)
+
+# Affichage de la liste des actions 
 table_display(list_actions)
-combinaisons = generate_combinations(list_actions)
-# print(combinaisons)
+
+# Création des combinaisons d'action possibles
+# Le [1:] créé un slice sans l'en-tête sinon l'entete serait considéré comme une ligne lambda*
+# Et cela disperserait des chaines de caractères dans pleins de combinaison comme s'il s'agissait d'actions
+l_combinaisons = generate_combinations(list_actions[1:])
+print("[bold green]✅ Les combinaisons sont créées")
+# print(l_combinaisons)
+
+print(l_combinaisons[15])
+
+# Calcul du cout total et du profit total pour chaque combinaison d'action
+l_combos_profit_cost_list = calculate_profit_and_costs(l_combinaisons)
+print("[bold green]✅ Les calculs de couts et profits sont établis")
+print(l_combos_profit_cost_list[15])
