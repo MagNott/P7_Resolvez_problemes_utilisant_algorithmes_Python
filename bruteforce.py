@@ -27,15 +27,26 @@ def read_csv(p_csv_name: str) -> list[list[str]]:
     - Si le fichier n'existe pas, affiche un message d'erreur.
     - Le fichier est lu sans modification des types (tout reste en chaîne).
     """
-    if not os.path.exists(p_csv_name):
-        print(f"Le fichier {p_csv_name} n'est pas trouvé")
-    else:
-        l_work_file = []
-        with open(p_csv_name, newline='', encoding='utf-8') as f:
-            o_reader = csv.reader(f)
-            for l_row in o_reader:
-                l_work_file.append(l_row)
-    return l_work_file
+    try:
+        if not os.path.exists(p_csv_name):
+            raise FileNotFoundError(f"Le fichier {p_csv_name} n'est pas trouvé.")
+            print(f"Le fichier {p_csv_name} n'est pas trouvé")
+        else:
+            l_work_file = []
+            with open(p_csv_name, newline='', encoding='utf-8') as f:
+                o_reader = csv.reader(f)
+                for l_row in o_reader:
+                    if len(l_row) < 3:  # protection minimale
+                        raise ValueError("Une ligne du fichier CSV est incomplète.")
+                    l_work_file.append(l_row)
+        return l_work_file
+
+    except FileNotFoundError as e:
+        print(f"[bold red]{e}[/bold red]")
+        return []
+    except Exception as e:
+        print(f"[bold red]Erreur lors de la lecture du CSV : {e}[/bold red]")
+        return []
 
 
 def calculate_profits(p_actions_list: list[list[str]]):
@@ -59,12 +70,19 @@ def calculate_profits(p_actions_list: list[list[str]]):
     - Les champs numériques sont convertis en float pour le calcul.
     - Le bénéfice est arrondi à 2 décimales.
     """
-    p_actions_list[0].append("Profit (€)")
-    for l_row in p_actions_list[1:]:
-        f_cost = float(l_row[1])
-        f_percent = float(l_row[2].replace("%", ""))
-        f_benefit = f_cost * (f_percent/100)
-        l_row.append(round(f_benefit, 2))
+    try:
+        p_actions_list[0].append("Profit (€)")
+        for l_row in p_actions_list[1:]:
+            try:
+                f_cost = float(l_row[1])
+                f_percent = float(l_row[2].replace("%", ""))
+                f_benefit = f_cost * (f_percent/100)
+                l_row.append(round(f_benefit, 2))
+            except ValueError:
+                print(f"[bold red]Erreur dans la ligne : {l_row}[/bold red]")
+                continue
+    except Exception as e:
+        print(f"[bold red]Erreur lors du calcul des profits : {e}[/bold red]")
 
 
 def table_display(p_actions_list: list[list[str]]):
@@ -316,10 +334,17 @@ def display_best_combo(p_list_best_combo: list[dict]):
 
 
 # PROGRAMME PRINCIPAL
+o_console = Console()
+
 s_actions_file = "Liste-actions.csv"
 
 # Chargement des données CSv dans le programme
 list_actions = read_csv(s_actions_file)
+
+# Vérifie si le fichier est vide ou incorrect, si c'est le cas, ça stoppe l'execution
+if not list_actions:
+    o_console.print("[bold red]Chargement annulé, le fichier est vide ou incorrect[/bold red]")
+    exit()
 
 # Calcule des profits pour chaque action
 calculate_profits(list_actions)
@@ -327,12 +352,10 @@ calculate_profits(list_actions)
 # Affichage de la liste des actions
 table_display(list_actions)
 
-o_console = Console()
 
 # Création des combinaisons d'action possibles
 # Le [1:] créé un slice sans l'en-tête sinon l'entete serait considéré comme une ligne lambda*
 # Et cela disperserait des chaines de caractères dans pleins de combinaison comme s'il s'agissait d'actions
-o_console = Console()
 o_console.rule("[bold cyan]Étape 1/4 : Génération des combinaisons[/bold cyan]", style="cyan")
 
 l_combinaisons = generate_combinations(list_actions[1:])
