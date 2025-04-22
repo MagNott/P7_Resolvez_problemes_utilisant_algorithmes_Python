@@ -3,6 +3,7 @@ import os
 from rich.table import Table
 from rich.console import Console
 from rich import print
+from rich.panel import Panel
 
 
 # FONCTIONS
@@ -93,9 +94,10 @@ def table_display(p_actions_list: list[list[str]]):
         La fonction affiche le tableau dans la console, mais ne retourne rien.
     """
     o_console = Console()
+    border_style = "blue"
 
     # Création du tableau
-    o_table = Table(title="Liste des actions")
+    o_table = Table(title="Liste des actions qui peuvent être achetées", border_style=border_style)
 
     # Creation des colonnes
     o_table.add_column("Nom de l'action")
@@ -108,7 +110,9 @@ def table_display(p_actions_list: list[list[str]]):
         o_table.add_row(l_row[0], l_row[1], l_row[2], str(l_row[3]))
 
     # Affichage du tableau
+    o_console.print("")
     o_console.print(o_table)
+    o_console.print("")
 
 
 def generate_combinations(p_actions_list: list[list[str]]) -> list[list]:
@@ -271,7 +275,47 @@ def sort_combos_by_profit(p_valid_combos: list[dict]) -> list[dict]:
     return l_sorted_combos
 
 
-# PROGRAMME PRINCOPAL
+def display_best_combo(p_list_best_combo: list[dict]):
+    """
+    Affiche joliment la meilleure combinaison d’actions à acheter,
+    en utilisant la bibliothèque `rich`.
+
+    Paramètre :
+    -----------
+    p_best_combo : dict
+        Un dictionnaire contenant :
+        - "combinaison" : liste des actions sélectionnées
+        - "cout" : coût total
+        - "profit" : profit total
+    """
+    o_console = Console()
+
+    # Prend la meilleure combinaison
+    l_best_combo = p_list_best_combo[0]["combinaison"]
+
+    # Prépare une liste vide pour mettre les phrases
+    l_phrases_actions = []
+
+    # Fait une boucle pour chaque action
+    for action in l_best_combo:
+        # a[0] = nom, a[1] = coût, a[2] = bénéfice
+        s_phrase = f" • {action[0]} - pour un coût de : {action[1]}€ et un bénéfice de : {action[2]})"
+        l_phrases_actions.append(s_phrase)
+
+    # Crée une seule chaîne avec toutes les phrases séparées par des retours à la ligne
+    s_action_lines = "\n".join(l_phrases_actions)
+
+# Suppresion de l'indentation pour l'affichage sans espace devant chaque option
+    o_console.print(Panel.fit(f"""
+    [bold yellow]- Coût Total : {l_valid_combinaison_sorted[0]['cout']}  €
+    - Profit Total : {l_valid_combinaison_sorted[0]['profit']} €[/bold yellow]
+    - Les actions à acheter :
+{s_action_lines}
+    """, title="Meilleure combinaison d'action à acheter", border_style="bright_magenta"))
+    o_console.print("")
+
+
+# PROGRAMME PRINCIPAL
 s_actions_file = "Liste-actions.csv"
 
 # Chargement des données CSv dans le programme
@@ -280,36 +324,47 @@ list_actions = read_csv(s_actions_file)
 # Calcule des profits pour chaque action
 calculate_profits(list_actions)
 
-# Affichage de la liste des actions 
+# Affichage de la liste des actions
 table_display(list_actions)
+
+o_console = Console()
 
 # Création des combinaisons d'action possibles
 # Le [1:] créé un slice sans l'en-tête sinon l'entete serait considéré comme une ligne lambda*
 # Et cela disperserait des chaines de caractères dans pleins de combinaison comme s'il s'agissait d'actions
-print("[bold cyan] Génération des combinaisons...")
-l_combinaisons = generate_combinations(list_actions[1:])
-print("[bold green]✅ Les combinaisons sont créées")
-# print(l_combinaisons)
+o_console = Console()
+o_console.rule("[bold cyan]Étape 1/4 : Génération des combinaisons[/bold cyan]", style="cyan")
 
-# print(l_combinaisons[15])
+l_combinaisons = generate_combinations(list_actions[1:])
+o_console.print("")  # Espace visuel
+print("[bold green]✅ Les combinaisons sont créées")
+o_console.print("")
+o_console.print("")
 
 # Calcul du cout total et du profit total pour chaque combinaison d'action
-print("[bold cyan] Calcul du coût total et du profit total de chaque combinaison...")
+o_console.rule("[bold cyan]Étape 2/4 : Calcul des totaux (coût, profit) de chaque combinaison[/bold cyan]", style="cyan")
+
 l_combos_profit_cost_list = calculate_profit_and_costs(l_combinaisons)
+o_console.print("")
 print("[bold green]✅ Les calculs de couts et profits sont établis")
-# print(l_combos_profit_cost_list[15])
+o_console.print("")
+o_console.print("")
 
-print("[bold cyan] Filtre des combinaisons coutant + de 500€...")
+o_console.rule("[bold cyan]Étape 3/4 :  Filtre des combinaisons coutant + de 500€[/bold cyan]", style="cyan")
+
 l_valid_combinaison = filter_valid_combinations(l_combos_profit_cost_list)
+o_console.print("")
 print("[bold green]✅ Les combinaisons coutant plus de 500€ sont exclues")
+o_console.print("")
+o_console.print("")
 
-print("[bold cyan] Trie des combinaisons en fonction du meilleur profit...")
+o_console.rule("[bold cyan]Étape 4/4 : Tri des combinaisons en fonction du meilleur profit[/bold cyan]", style="cyan")
+
 l_valid_combinaison_sorted = sort_combos_by_profit(l_valid_combinaison)
-print("[bold green]✅ Les combinaisons sont triés de celle qui rapporte le meilleur profit à celle qui rapporte le moins")
+o_console.print("")
+print("[bold green]✅ Les combinaisons sont triées de la plus rentable à la moins rentable")
+o_console.print("")
+o_console.print("")
 
-print(f"La meilleure combinaison est {l_valid_combinaison_sorted[0]}")
-print(l_valid_combinaison_sorted[1])
-print(l_valid_combinaison_sorted[2])
-print(l_valid_combinaison_sorted[3])
-print(l_valid_combinaison_sorted[4])
-print(l_valid_combinaison_sorted[5])
+# Affichage de la meilleure combinaison d'actions
+display_best_combo(l_valid_combinaison_sorted)
