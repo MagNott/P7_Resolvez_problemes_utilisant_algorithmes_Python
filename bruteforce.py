@@ -356,6 +356,7 @@ table_display(list_actions)
 # Création des combinaisons d'action possibles
 # Le [1:] créé un slice sans l'en-tête sinon l'entete serait considéré comme une ligne lambda*
 # Et cela disperserait des chaines de caractères dans pleins de combinaison comme s'il s'agissait d'actions
+
 o_console.rule("[bold cyan]Étape 1/4 : Génération des combinaisons[/bold cyan]", style="cyan")
 
 l_combinaisons = generate_combinations(list_actions[1:])
