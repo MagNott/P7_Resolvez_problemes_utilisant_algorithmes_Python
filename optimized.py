@@ -6,7 +6,7 @@ from rich.console import Console
 from rich import print
 import time
 from rich.panel import Panel
-
+import math
 
 # FONCTIONS
 def read_csv(p_csv_name: str) -> list[list[str]]:
@@ -291,7 +291,7 @@ def fill_matrix(p_list_matrix_init: list[list[dict]], p_list_actions_dict: list[
         for column in range(i_budget_max + 1):  # Deuxième boucle imbriquée, le budget en cours (colonne)
             # ici accès à la cellule correspondant au budget courant
             d_action = p_list_actions_dict[row]
-            f_cost = float(d_action["cout"])
+            f_cost = math.ceil(float(d_action["cout"]))
             f_profit = float(d_action["profit"])
 
             # Cas où le coût de l'action est supérieur à la colonne (budget )
@@ -324,6 +324,31 @@ def fill_matrix(p_list_matrix_init: list[list[dict]], p_list_actions_dict: list[
                 else:
                     # Si le profit sans l'action courante est meilleur, on recopie la cellule précédente, même colonne
                     p_list_matrix_init[row][column] = p_list_matrix_init[row-1][column]
+
+
+def filter_actions(p_actions_list: list[list]) -> list[list]:
+    """
+    Filtre les actions en supprimant celles dont le prix ou le profit est nul ou négatif.
+
+    Paramètres :
+    -----------
+    p_actions_list : List[List]
+        Liste contenant toutes les actions, y compris l'en-tête.
+        Chaque ligne représente une action : [nom, prix (str), profit (str)].
+
+    Retour :
+    -------
+    List[List]
+        Liste des actions valides : celles avec un prix > 0 et un profit > 0.
+        L'en-tête n'est pas inclus dans la liste retournée.
+    """
+    l_filtered_actions = []
+    for action in p_actions_list[1:]:
+        price = float(action[1])
+        profit = float(action[2])
+        if price > 0 and profit > 0:
+            l_filtered_actions.append(action)
+    return l_filtered_actions
 
 
 # PROGRAMME PRINCIPAL
@@ -379,46 +404,97 @@ print(f"⏱️ Temps d'exécution de optimized avec 20 actions : {end_time - sta
 
 # Travail sur le Dataset 1
 # mesure du temps d'exécution
-# start_time = time.time()
+start_time = time.time()
 
-# o_console = Console()
+o_console = Console()
 
-# o_console.print("")
-# o_console.print("")
+o_console.print("")
+o_console.print("")
 
-# o_console.rule("[bold cyan]Travail sur la liste de 20 actions[/bold cyan]", style="cyan")
+o_console.rule("[bold cyan]Travail sur dataset - 1[/bold cyan]", style="cyan")
 
-# s_actions_file = "Liste-actions.csv"
+# Chargement des données CSV dans le programme
+list_actions = read_csv("dataset1.csv")
 
-# # Chargement des données CSV dans le programme
-# list_actions = read_csv(s_actions_file)
 
-# # Vérifie si le fichier est vide ou incorrect, si c'est le cas, ça stoppe l'exécution
-# if not list_actions:
-#     o_console.print("[bold red]Chargement annulé, le fichier est vide ou incorrect[/bold red]")
-#     exit()
+# Vérifie si le fichier est vide ou incorrect, si c'est le cas, ça stoppe l'exécution
+if not list_actions:
+    o_console.print("[bold red]Chargement annulé, le fichier est vide ou incorrect[/bold red]")
+    exit()
 
-# # Calcule des profits pour chaque action
-# calculate_profits(list_actions)
+
+l_filtered_actions = filter_actions(list_actions)
+
+# Calcule des profits pour chaque action
+calculate_profits(l_filtered_actions)
 
 # # Affichage de la liste des actions
-# table_display(list_actions)
+# table_display(l_filtered_actions)
 
-# # Transformation de la liste des actions en liste de dictionnaire d'actions
-# l_dict_actions = transform_to_dict(list_actions)
+# Transformation de la liste des actions en liste de dictionnaire d'actions
+l_dict_actions = transform_to_dict(l_filtered_actions)
 
-# # Génération de la matrice avec une valeur par défaut
-# l_matrix_init = generate_matrix(l_dict_actions)
+# Génération de la matrice avec une valeur par défaut
+l_matrix_init = generate_matrix(l_dict_actions)
 
-# # Remplissage de la matrice avec les calculs pour chaque action
-# fill_matrix(l_matrix_init, l_dict_actions)
+# Remplissage de la matrice avec les calculs pour chaque action
+fill_matrix(l_matrix_init, l_dict_actions)
 
-# # Isoler la meilleure combinaison d'actions
-# l_dict_final_row = l_matrix_init[-1]
-# best_actions_list = l_dict_final_row[500]
+# Isoler la meilleure combinaison d'actions
+l_dict_final_row = l_matrix_init[-1]
+best_actions_list = l_dict_final_row[500]
 
-# display_best_combo(best_actions_list)
+display_best_combo(best_actions_list)
 
-# end_time = time.time()
+end_time = time.time()
 
-# print(f"⏱️ Temps d'exécution de optimized avec 20 actions : {end_time - start_time:.2f} secondes")
+print(f"⏱️ Temps d'exécution de optimized pour dataset 1 : {end_time - start_time:.2f} secondes")
+
+# -----------------------------------------------------------------------------------------------------
+
+# Travail sur le Dataset 2
+# mesure du temps d'exécution
+start_time = time.time()
+
+o_console = Console()
+
+o_console.print("")
+o_console.print("")
+
+o_console.rule("[bold cyan]Travail sur dataset - 2[/bold cyan]", style="cyan")
+
+# Chargement des données CSV dans le programme
+list_actions = read_csv("dataset2.csv")
+
+
+# Vérifie si le fichier est vide ou incorrect, si c'est le cas, ça stoppe l'exécution
+if not list_actions:
+    o_console.print("[bold red]Chargement annulé, le fichier est vide ou incorrect[/bold red]")
+    exit()
+
+l_filtered_actions = filter_actions(list_actions)
+
+# Calcule des profits pour chaque action
+calculate_profits(l_filtered_actions)
+
+# # Affichage de la liste des actions
+# table_display(l_filtered_actions)
+
+# Transformation de la liste des actions en liste de dictionnaire d'actions
+l_dict_actions = transform_to_dict(l_filtered_actions)
+
+# Génération de la matrice avec une valeur par défaut
+l_matrix_init = generate_matrix(l_dict_actions)
+
+# Remplissage de la matrice avec les calculs pour chaque action
+fill_matrix(l_matrix_init, l_dict_actions)
+
+# Isoler la meilleure combinaison d'actions
+l_dict_final_row = l_matrix_init[-1]
+best_actions_list = l_dict_final_row[500]
+
+display_best_combo(best_actions_list)
+
+end_time = time.time()
+
+print(f"⏱️ Temps d'exécution de optimized pour dataset 2 : {end_time - start_time:.2f} secondes")
