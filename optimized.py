@@ -5,7 +5,7 @@ from rich.table import Table
 from rich.console import Console
 from rich import print
 import time
-# from rich.panel import Panel
+from rich.panel import Panel
 
 
 # FONCTIONS
@@ -28,6 +28,12 @@ def read_csv(p_csv_name: str) -> list[list[str]]:
     ----------
     - Si le fichier n'existe pas, affiche un message d'erreur.
     - Le fichier est lu sans modification des types (tout reste en chaîne).
+
+     Retour :
+    -------
+    list[list]
+        Liste contenant toutes les lignes du fichier CSV,
+        chaque ligne étant une liste de chaînes représentant les colonnes.
     """
     try:
         if not os.path.exists(p_csv_name):
@@ -50,7 +56,7 @@ def read_csv(p_csv_name: str) -> list[list[str]]:
         return []
 
 
-def calculate_profits(p_actions_list: list[list[str]]):
+def calculate_profits(p_actions_list: list[list[str]]) -> None:
     """
     Calcule le bénéfice en euros pour chaque action et l'ajoute à la liste.
 
@@ -86,7 +92,7 @@ def calculate_profits(p_actions_list: list[list[str]]):
         print(f"[bold red]Erreur lors du calcul des profits : {e}[/bold red]")
 
 
-def table_display(p_actions_list: list[list[str]]):
+def table_display(p_actions_list: list[list[str]]) -> None:
     """
     Affiche un tableau formaté contenant les actions, leurs coûts, bénéfices et profits.
 
@@ -134,44 +140,44 @@ def table_display(p_actions_list: list[list[str]]):
     o_console.print("")
 
 
-# def display_best_combo(p_list_best_combo: list[dict]):
-#     """
-#     Affiche joliment la meilleure combinaison d’actions à acheter,
-#     en utilisant la bibliothèque `rich`.
+def display_best_combo(p_best_actions_list: dict) -> None:
+    """
+    Affiche joliment la meilleure combinaison d’actions à acheter,
+    en utilisant la bibliothèque `rich`.
 
-#     Paramètre :
-#     -----------
-#     p_best_combo : dict
-#         Un dictionnaire contenant :
-#         - "combinaison" : liste des actions sélectionnées
-#         - "cout" : coût total
-#         - "profit" : profit total
-#     """
-#     o_console = Console()
+    Paramètre :
+    -----------
+    p_best_actions_list : dict
+        Un dictionnaire contenant :
+         - "actions" : liste des actions sélectionnées
+        - "profit" : profit total
+    """
+    o_console = Console()
 
-#     # Prend la meilleure combinaison
-#     l_best_combo = p_list_best_combo[0]["combinaison"]
+    l_best_combo = p_best_actions_list["actions"]
 
-#     # Prépare une liste vide pour mettre les phrases
-#     l_phrases_actions = []
+    # Prépare une liste vide pour mettre les phrases
+    l_phrases_actions = []
+    cout = 0
 
-#     # Fait une boucle pour chaque action
-#     for action in l_best_combo:
-#         # a[0] = nom, a[1] = coût, a[2] = bénéfice
-#         s_phrase = f" • {action[0]} - pour un coût de : {action[1]}€ et un bénéfice de : {action[2]})"
-#         l_phrases_actions.append(s_phrase)
+    # Fait une boucle pour chaque action
+    for action in l_best_combo:
+        s_phrase = f" {action['nom']} - pour un coût de : {action['cout']}€ et un bénéfice de : {action['benefice']})"
+        l_phrases_actions.append(s_phrase)
+        cout += float(action["cout"])
 
-#     # Crée une seule chaîne avec toutes les phrases séparées par des retours à la ligne
-#     s_action_lines = "\n".join(l_phrases_actions)
+    # Crée une seule chaîne avec toutes les phrases séparées par des retours à la ligne
+    s_action_lines = "\n".join(l_phrases_actions)
 
-# # Suppresion de l'indentation pour l'affichage sans espace devant chaque option
-#     o_console.print(Panel.fit(f"""
-#     [bold yellow]- Coût Total : {l_valid_combinaison_sorted[0]['cout']}  €
-#     - Profit Total : {l_valid_combinaison_sorted[0]['profit']} €[/bold yellow]
-#     - Les actions à acheter :
-# {s_action_lines}
-#     """, title="Meilleure combinaison d'action à acheter", border_style="bright_magenta"))
-#     o_console.print("")
+# Suppresion de l'indentation de {s_action_lines} pour l'affichage sans espace devant chaque option
+    o_console.print(Panel.fit(f"""
+    [bold yellow]- Coût Total : {cout}  €
+    - Profit Total : {p_best_actions_list['profit']:.2f} €[/bold yellow]
+    - Les actions à acheter :
+{s_action_lines}
+    """, title="Meilleure combinaison d'action à acheter", border_style="bright_magenta"))
+    o_console.print("")
+
 
 def transform_to_dict(p_actions_list: list[list]) -> list[dict]:
     """
@@ -189,7 +195,7 @@ def transform_to_dict(p_actions_list: list[list]) -> list[dict]:
         list[dict]: Liste de dictionnaires contenant les données des actions avec leurs attributs nommés.
     """
 
-    l_header = ["Nom", "cout", "benefice", "profit"]
+    l_header = ["nom", "cout", "benefice", "profit"]
 
     # Suppression de la première ligne (l'en-tête initial du fichier), on garde seulement les données
     l_rows = p_actions_list[1:]
@@ -322,10 +328,17 @@ def fill_matrix(p_list_matrix_init: list[list[dict]], p_list_actions_dict: list[
 
 # PROGRAMME PRINCIPAL
 
+# Travail sur le fichier avec 20 actions
+
 # mesure du temps d'exécution
 start_time = time.time()
 
 o_console = Console()
+
+o_console.print("")
+o_console.print("")
+
+o_console.rule("[bold cyan]Travail sur la liste de 20 actions[/bold cyan]", style="cyan")
 
 s_actions_file = "Liste-actions.csv"
 
@@ -352,23 +365,60 @@ l_matrix_init = generate_matrix(l_dict_actions)
 # Remplissage de la matrice avec les calculs pour chaque action
 fill_matrix(l_matrix_init, l_dict_actions)
 
-# Visualisation des dernières cellules de la dernière ligne de la matrice
-ligne_finale = l_matrix_init[-1]  # dernière ligne (toutes les colonnes pour la dernière action)
+# Isoler la meilleure combinaison d'actions
+l_dict_final_row = l_matrix_init[-1]
+best_actions_list = l_dict_final_row[500]
 
-print("\n📦 Dernières cellules de la matrice (budget proche de 500€) :\n")
-for j in range(495, 501):  # colonnes de 495 à 500 inclus
-    cellule = ligne_finale[j]
-    print(f"🎯 Budget {j}€")
-    print(f"   ➔ Profit total : {cellule['profit']:.2f}€")
-
-    if cellule["actions"]:
-        print(f"   ➔ Actions choisies :")
-        for action in cellule["actions"]:
-            print(f"      - {action['Nom']}: Coût {action['cout']}€, Profit {action['profit']}€")
-    else:
-        print(f"   ➔ Aucune action choisie.")
-    print("-" * 50)  # ligne de séparation pour que ce soit très lisible
+display_best_combo(best_actions_list)
 
 end_time = time.time()
 
 print(f"⏱️ Temps d'exécution de optimized avec 20 actions : {end_time - start_time:.2f} secondes")
+
+# -----------------------------------------------------------------------------------------------------
+
+# Travail sur le Dataset 1
+# mesure du temps d'exécution
+# start_time = time.time()
+
+# o_console = Console()
+
+# o_console.print("")
+# o_console.print("")
+
+# o_console.rule("[bold cyan]Travail sur la liste de 20 actions[/bold cyan]", style="cyan")
+
+# s_actions_file = "Liste-actions.csv"
+
+# # Chargement des données CSV dans le programme
+# list_actions = read_csv(s_actions_file)
+
+# # Vérifie si le fichier est vide ou incorrect, si c'est le cas, ça stoppe l'exécution
+# if not list_actions:
+#     o_console.print("[bold red]Chargement annulé, le fichier est vide ou incorrect[/bold red]")
+#     exit()
+
+# # Calcule des profits pour chaque action
+# calculate_profits(list_actions)
+
+# # Affichage de la liste des actions
+# table_display(list_actions)
+
+# # Transformation de la liste des actions en liste de dictionnaire d'actions
+# l_dict_actions = transform_to_dict(list_actions)
+
+# # Génération de la matrice avec une valeur par défaut
+# l_matrix_init = generate_matrix(l_dict_actions)
+
+# # Remplissage de la matrice avec les calculs pour chaque action
+# fill_matrix(l_matrix_init, l_dict_actions)
+
+# # Isoler la meilleure combinaison d'actions
+# l_dict_final_row = l_matrix_init[-1]
+# best_actions_list = l_dict_final_row[500]
+
+# display_best_combo(best_actions_list)
+
+# end_time = time.time()
+
+# print(f"⏱️ Temps d'exécution de optimized avec 20 actions : {end_time - start_time:.2f} secondes")
