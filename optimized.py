@@ -4,6 +4,7 @@ import os
 from rich.table import Table
 from rich.console import Console
 from rich import print
+import time
 # from rich.panel import Panel
 
 
@@ -320,6 +321,10 @@ def fill_matrix(p_list_matrix_init: list[list[dict]], p_list_actions_dict: list[
 
 
 # PROGRAMME PRINCIPAL
+
+# mesure du temps d'exécution
+start_time = time.time()
+
 o_console = Console()
 
 s_actions_file = "Liste-actions.csv"
@@ -363,3 +368,7 @@ for j in range(495, 501):  # colonnes de 495 à 500 inclus
     else:
         print(f"   ➔ Aucune action choisie.")
     print("-" * 50)  # ligne de séparation pour que ce soit très lisible
+
+end_time = time.time()
+
+print(f"⏱️ Temps d'exécution de optimized avec 20 actions : {end_time - start_time:.2f} secondes")
