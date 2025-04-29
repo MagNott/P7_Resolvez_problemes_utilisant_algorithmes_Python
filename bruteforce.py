@@ -4,6 +4,7 @@ from rich.table import Table
 from rich.console import Console
 from rich import print
 from rich.panel import Panel
+import time
 
 
 # FONCTIONS
@@ -334,6 +335,10 @@ def display_best_combo(p_list_best_combo: list[dict]):
 
 
 # PROGRAMME PRINCIPAL
+
+# mesure du temps d'exécution
+start_time = time.time()
+
 o_console = Console()
 
 s_actions_file = "Liste-actions.csv"
@@ -392,3 +397,7 @@ o_console.print("")
 
 # Affichage de la meilleure combinaison d'actions
 display_best_combo(l_valid_combinaison_sorted)
+
+end_time = time.time()
+
+print(f"⏱️ Temps d'exécution du brute-force : {end_time - start_time:.2f} secondes")
