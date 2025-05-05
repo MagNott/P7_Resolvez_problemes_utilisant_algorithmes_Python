@@ -8,6 +8,7 @@ import time
 from rich.panel import Panel
 import math
 
+
 # FONCTIONS
 def read_csv(p_csv_name: str) -> list[list[str]]:
     """
